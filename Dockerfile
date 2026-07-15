@@ -20,7 +20,7 @@ RUN ldconfig /usr/local/cuda-13.0/compat/
 # See: https://unsloth.ai/docs/basics/nvfp4
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install --system "packaging>=24.2" && \
-    uv pip install --system "vllm[flashinfer]>=0.25.0" && \
+    uv pip install --system "vllm[flashinfer]==0.24.0" && \
     uv pip install --system "flashinfer-python>=0.6.13" "nvidia-cutlass-dsl>=4.5.2" && \
     uv pip install --system --force-reinstall --no-deps nixl-cu13
 
