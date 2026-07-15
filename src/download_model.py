@@ -7,8 +7,8 @@ from huggingface_hub import snapshot_download
 from utils import timer_decorator
 
 BASE_DIR = "/" 
-TOKENIZER_PATTERNS = [["*.json", "tokenizer*"]]
-MODEL_PATTERNS = [["*.safetensors"], ["*.bin"], ["*.pt"]]
+TOKENIZER_PATTERNS = [["*.json", "tokenizer*"], ["*.json", "*token*"], ["*.model"], ["*.txt", "tokenizer*"]]
+MODEL_PATTERNS = [["*.safetensors"], ["*.bin"], ["*.pt"], ["*.json"], ["*.txt"]]
 
 def setup_env():
     if os.getenv("TESTING_DOWNLOAD") == "1":
@@ -25,6 +25,18 @@ def setup_env():
 
 @timer_decorator
 def download(name, revision, type, cache_dir):
+    # NVFP4 models (Unsloth Dynamic NVFP4) need full model download —
+    # config files, quant_config, preprocessor_config are critical for loading.
+    # Pattern-based download would miss these and cause vLLM load failures.
+    name_upper = (name or "").upper()
+    if "NVFP4" in name_upper or type == "model" and (
+        "NVFP4" in name_upper or os.getenv("FULL_MODEL_DOWNLOAD") == "1"
+    ):
+        logging.info(f"NVFP4 model detected — downloading full snapshot for {name}")
+        path = snapshot_download(name, revision=revision, cache_dir=cache_dir)
+        logging.info(f"Full model downloaded to {path}")
+        return path
+
     if type == "model":
         pattern_sets = [model_pattern + TOKENIZER_PATTERNS[0] for model_pattern in MODEL_PATTERNS]
     elif type == "tokenizer":

@@ -1,0 +1,17 @@
+# Gemma 4 31B — Unsloth Dynamic NVFP4 (Blackwell GPUs only)
+# Requires: RTX 50xx, B200, RTX PRO 6000 (BLACKWELL_96 pool on RunPod)
+# See: https://unsloth.ai/docs/basics/nvfp4
+model: unsloth/gemma-4-31B-it-NVFP4
+gpu-memory-utilization: 0.90
+max-model-len: 131072
+dtype: auto
+trust-remote-code: true
+# IMPORTANT: Do NOT set quantization — vLLM 0.25+ auto-detects NVFP4
+# Do NOT set attention-backend or moe-backend — Cute-DSL auto-selected
+# Marlin is 2.5× slower for NVFP4 W4A4!
+kv-cache-dtype: fp8          # FP8 KV cache — 2× longer context (Unsloth calibrated)
+enforce-eager: false
+enable-prefix-caching: true
+enable-chunked-prefill: true
+# Optional MTP speculative decoding (faster decode):
+# speculative-config: '{"method": "mtp", "num_speculative_tokens": 2}'

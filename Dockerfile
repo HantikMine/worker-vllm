@@ -5,21 +5,23 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y \
     && apt-get install -y curl git software-properties-common \
     && add-apt-repository -y ppa:deadsnakes/ppa \
-    && apt-get install -y python3.12 python3.12-dev python3.12-venv \
-    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 \
-    && update-alternatives --set python3 /usr/bin/python3.12 \
-    && rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED \
+    && apt-get install -y python3.13 python3.13-dev python3.13-venv \
+    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.13 1 \
+    && update-alternatives --set python3 /usr/bin/python3.13 \
+    && rm -f /usr/lib/python3.13/EXTERNALLY-MANAGED \
     && curl -LsSf https://astral.sh/uv/install.sh | sh
 
 ENV PATH="/root/.local/bin:$PATH"
 
 RUN ldconfig /usr/local/cuda-13.0/compat/
 
-# Install vLLM with FlashInfer - use CUDA 130 PyTorch wheels
+# Install vLLM with FlashInfer — CUDA 13.0 PyTorch wheels
+# NVFP4 dependencies: flashinfer-python >=0.6.13, nvidia-cutlass-dsl >=4.5.2
+# See: https://unsloth.ai/docs/basics/nvfp4
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install --system "packaging>=24.2" && \
-    uv pip install --system "vllm[flashinfer]==0.23.0" && \
-    uv pip install --system git+https://github.com/deepseek-ai/DeepGEMM.git@714dd1a4a980f7937a74343d19a8eba4fe321480 --no-build-isolation && \
+    uv pip install --system "vllm[flashinfer]>=0.25.0" && \
+    uv pip install --system "flashinfer-python>=0.6.13" "nvidia-cutlass-dsl>=4.5.2" && \
     uv pip install --system --force-reinstall --no-deps nixl-cu13
 
 # Fix CUTLASS DSL cu13 install order: nvidia-cutlass-dsl[cu13] installs
