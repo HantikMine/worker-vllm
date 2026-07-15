@@ -29,7 +29,7 @@ def download(name, revision, type, cache_dir):
     # config files, quant_config, preprocessor_config are critical for loading.
     # Pattern-based download would miss these and cause vLLM load failures.
     name_upper = (name or "").upper()
-    if "NVFP4" in name_upper or type == "model" and (
+    if type == "model" and (
         "NVFP4" in name_upper or os.getenv("FULL_MODEL_DOWNLOAD") == "1"
     ):
         logging.info(f"NVFP4 model detected — downloading full snapshot for {name}")
